@@ -1,11 +1,9 @@
 \documentclass{mrl}
-\usepackage{ amssymb }
+\usepackage{hyperref}
 \title{Framework for assessing safe lock times based on worst case plausible scenario}
 \authors{Isthmus}%\footnote{\texttt{Isthmus@getmonero.org}}}
 \affiliations{Monero Research Lab, Noncesense Research Lab}
 \date{October 2019}
-
-\usepackage[official]{eurosym}
 
 \usepackage{draftwatermark}
 \SetWatermarkScale{4}
@@ -21,9 +19,9 @@ This note describes a framework for assessing and discussing the depth that cons
 \end{abstract}
 
 \section{Theory} \label{sec_theory}
-Let $T_i$ represent a phenomenon that creates of alternative blocks, with expected maximum alternative chain length $L_i$. An appropriate lock depth ($D$) is estimated from the set of lengths and a safety term, $S$. Generally,
+Let $T_i$ represent a phenomenon that creates alternative blocks, with expected maximum alternative chain length $L_i$. An appropriate lock depth ($D$) is calculated from the set of lengths and a safety term, $S$. Generally,
 \begin{equation}D = \mathrm{fxn}(\max(\{L_1, L_2, ... L_n\}), S). \label{D_gen} \end{equation}
-One simple form is
+One simple form is:
 \begin{equation}D = S\cdot\max(\{L_1, L_2, ... L_n\}). \label{D_mult} \end{equation}
 
 \section{Phenomena}
@@ -31,7 +29,7 @@ Phenomena that could produce alternative blocks include:
 \begin{itemize}
     \item $T_1$: Latency
     \item $T_2$: 51\% attack
-    \item $T_3$: Stubborn \& selfish mining
+    \item $T_3$:  Selfish\footnote{Ittay Eyal and Emin G{\"u}n Sire \emph{Majority is not Enough: Bitcoin Mining is Vulnerable}, 2013, https://arxiv.org/abs/1311.0243} \& stubborn\footnote{Kartik Nayak, Srijan Kumar, Andrew Miller, Elaine Shi \emph{Stubborn Mining: Generalizing Selfish Mining and Combining with an Eclipse Attack}, 2016, IEEE, DOI: 10.1109/EuroSP.2016.32} mining
 \end{itemize}
 
 This list must be as comprehensive as possible, so please contribute your ideas.
@@ -47,24 +45,24 @@ For $T_2$ (51\% attack), we cannot safely derive $L_2$ from empirical data, sinc
 
 Here is one possible approach for assessing $L_2$. Consider $P$, the probability of mining a winning chain $n$ blocks long, over $t$ time window, with $h$ fraction of the hash rate. 
 \begin{equation}P = \mathrm{fxn}(n, t, h)\label{broad_P}\end{equation}
-First, we determine comfortable values for $P$, $t$, and $h$. For example, it could be highly disruptive if an entity mining with 20\% of the hashrate can cause a reorganization deeper than lock time on a week timescale. However, it may be acceptable for an entity with $h=20\%$ of the hash rate to have a $P=0.0001\%$ chance of producing a winning alternative chain in $t = 10000 \mathrm{ years}$. With $P$, $t$, and $h$ determined, equation \ref{broad_P} can be inverted to solve for the only unknown, $n = L_2$.
+First, we determine comfortable values for $P$, $t$, and $h$. For example, it could be highly disruptive if an entity mining with 20\% of the hashrate can cause a reorganization deeper than lock time on a week timescale. However, it may be acceptable for an entity with $h=20\%$ of the hash rate to have a $P=0.0001\%$ chance of producing a winning alternative chain in $t = 10000\, \mathrm{ years}$. With $P$, $t$, and $h$ determined, equation \ref{broad_P} can be inverted to solve for the only unknown, $n = L_2$.
 
 \subsection{Stubborn and selfish mining}
 $T_3$ encompasses alternative blocks produced by selfish and stubborn miners, which has parallels with principles discussed in the previous section. I expect $L_3 < L_2$, so it is not explored further here.
 
 \section{Alternative forms}
-In \ref{sec_theory}, equation \ref{D_mult} was suggested as a specific form of the general equation \ref{D_gen}, however alternative forms can be constructed.
+In \S\ref{sec_theory}, equation \ref{D_mult} was suggested as a specific form of the general equation \ref{D_gen}, however alternative forms can be constructed.
 
-While the safety term was a multiplicative factor in \ref{D_gen}, it could be an additive term $S'$ instead
+While the safety term was a multiplicative factor in equation \ref{D_gen}, it could be an additive term $S'$ instead
 \begin{equation}D = \max(\{L_1, L_2, ... L_n\}) + S'. \label{D_add} \end{equation}
 
-Instead of a single safety term, an phenomenon-specific buffer $s_i$ could be estimated for each $T_i$
+Instead of a single safety term, a phenomenon-specific buffer $s_i$ could be estimated for each $T_i$
 \begin{equation}D = \max(\{s_1L_1, s_2L_2, ... s_nL_n\}). \label{D_breakout} \end{equation}
-I recommend against this approach, since it introduces more degrees of freedom, more room for error, and complicate community discussion. Suppose evidence starts to suggest that specialized mining equipment (e.g. ASICs) are being used on the Monero network again - this change in available information may need to be reflected in the lock depth. The direct way to take this into account is adjusting the $h$ in equation \ref{broad_P} to its worst case scenario, rather than modifying the $s_2$ confidence.
+I recommend against this approach of multiple safety modifiers, since it introduces more degrees of freedom, more room for error, and complicates community discussion. Suppose evidence starts to suggest that specialized mining equipment (e.g. ASICs) is being used on the Monero network again - this change in available information may need to be reflected in the lock depth. The direct way to take this into account is adjusting $h$ in equation \ref{broad_P} to its new worst case scenario, rather than modifying the $s_2$ confidence.
 
 \section{Conclusions}
 This framework is designed to facilitate and focus discussion around selecting an appropriate lock time, based on exhaustive risk analysis. Community members are encouraged to contribute to the list of possible phenomena, suggest ways to estimate plausible lengths, and consider an appropriate safety term.
 
-Note: I suspect that an analytical solution for \ref{broad_P} is available in literature; please direct me towards the result.
+Note: I suspect that an analytical solution for equation \ref{broad_P} is available in literature; please direct me towards the result.
 
 \end{document}
