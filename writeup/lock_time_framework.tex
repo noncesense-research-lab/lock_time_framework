@@ -1,0 +1,70 @@
+\documentclass{mrl}
+\usepackage{ amssymb }
+\title{Framework for assessing safe lock times based on worst case plausible scenario}
+\authors{Isthmus}%\footnote{\texttt{Isthmus@getmonero.org}}}
+\affiliations{Monero Research Lab, Noncesense Research Lab}
+\date{October 2019}
+
+\usepackage[official]{eurosym}
+
+\usepackage{draftwatermark}
+\SetWatermarkScale{4}
+\SetWatermarkLightness{0.9}
+
+\type{TECHNICAL NOTE}
+\ident{MRL-00XX}
+
+\begin{document}
+\vspace{-0.25cm}
+\begin{abstract}
+This note describes a framework for assessing and discussing the depth that constitutes a safe lock time. The principle is intuitive: the lock time is derived from the worst case plausible scenario. Phenomena that produce alternative blocks are exhaustively enumerated, the expected maximum length is estimated for each. The appropriate lock time is determined by the greatest element and a safety term.
+\end{abstract}
+
+\section{Theory} \label{sec_theory}
+Let $T_i$ represent a phenomenon that creates of alternative blocks, with expected maximum alternative chain length $L_i$. An appropriate lock depth ($D$) is estimated from the set of lengths and a safety term, $S$. Generally,
+\begin{equation}D = \mathrm{fxn}(\max(\{L_1, L_2, ... L_n\}), S). \label{D_gen} \end{equation}
+One simple form is
+\begin{equation}D = S\cdot\max(\{L_1, L_2, ... L_n\}). \label{D_mult} \end{equation}
+
+\section{Phenomena}
+Phenomena that could produce alternative blocks include:
+\begin{itemize}
+    \item $T_1$: Latency
+    \item $T_2$: 51\% attack
+    \item $T_3$: Stubborn \& selfish mining
+\end{itemize}
+
+This list must be as comprehensive as possible, so please contribute your ideas.
+
+\section{Techniques for length estimation}
+For each phenomenon, we take an individualized approach to selecting our maximum length expectation $L_i$, since there is no one-size-fit-all algorithm for different physical phenomena.
+
+\subsection{Latency}
+For $T_1$ (latency), Noncesense archival network data can be compared across multiple nodes to put an experimental upper bound on length of reorgs experienced globally (i.e. by more than 15\% of nodes). Archival network data from early 2019 showed no global reorganizations greater than depth of two, so $L_1 = 2$. Note that more recent data should be reviewed, and latency-induced forks will increase with block size. 
+
+\subsection{51\% attack}
+For $T_2$ (51\% attack), we cannot safely derive $L_2$ from empirical data, since one should always assume that an adversary may control significant hash power not contributing to the main chain. For example, there may currently exist an entity with enough hashrate to mine competitive alternative chains 7 or 8 blocks deep, which are never broadcasted, in order to avoid revealing their existence until one of their alternative chains exceeds common lock depth (at time of writing, $D = 10$ for most software). 
+
+Here is one possible approach for assessing $L_2$. Consider $P$, the probability of mining a winning chain $n$ blocks long, over $t$ time window, with $h$ fraction of the hash rate. 
+\begin{equation}P = \mathrm{fxn}(n, t, h)\label{broad_P}\end{equation}
+First, we determine comfortable values for $P$, $t$, and $h$. For example, it could be highly disruptive if an entity mining with 20\% of the hashrate can cause a reorganization deeper than lock time on a week timescale. However, it may be acceptable for an entity with $h=20\%$ of the hash rate to have a $P=0.0001\%$ chance of producing a winning alternative chain in $t = 10000 \mathrm{ years}$. With $P$, $t$, and $h$ determined, equation \ref{broad_P} can be inverted to solve for the only unknown, $n = L_2$.
+
+\subsection{Stubborn and selfish mining}
+$T_3$ encompasses alternative blocks produced by selfish and stubborn miners, which has parallels with principles discussed in the previous section. I expect $L_3 < L_2$, so it is not explored further here.
+
+\section{Alternative forms}
+In \ref{sec_theory}, equation \ref{D_mult} was suggested as a specific form of the general equation \ref{D_gen}, however alternative forms can be constructed.
+
+While the safety term was a multiplicative factor in \ref{D_gen}, it could be an additive term $S'$ instead
+\begin{equation}D = \max(\{L_1, L_2, ... L_n\}) + S'. \label{D_add} \end{equation}
+
+Instead of a single safety term, an phenomenon-specific buffer $s_i$ could be estimated for each $T_i$
+\begin{equation}D = \max(\{s_1L_1, s_2L_2, ... s_nL_n\}). \label{D_breakout} \end{equation}
+I recommend against this approach, since it introduces more degrees of freedom, more room for error, and complicate community discussion. Suppose evidence starts to suggest that specialized mining equipment (e.g. ASICs) are being used on the Monero network again - this change in available information may need to be reflected in the lock depth. The direct way to take this into account is adjusting the $h$ in equation \ref{broad_P} to its worst case scenario, rather than modifying the $s_2$ confidence.
+
+\section{Conclusions}
+This framework is designed to facilitate and focus discussion around selecting an appropriate lock time, based on exhaustive risk analysis. Community members are encouraged to contribute to the list of possible phenomena, suggest ways to estimate plausible lengths, and consider an appropriate safety term.
+
+Note: I suspect that an analytical solution for \ref{broad_P} is available in literature; please direct me towards the result.
+
+\end{document}
